@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="style/style.css">
+
+    <style type="text/css" media="print">
+        .noprint {
+            display: none
+        }
+        
+        .print {
+            display: block !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header class="el-header noprint">
+            <div class="icon-btns">
+                <i class="icon-list" @click="changeLeftMenu"></i>
+                <i class="icon-skip_previous" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('first')"></i>
+                <i class="icon-play_arrow prev-icon" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('prev')"></i>
+                <i class="icon-play_arrow" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('next')"></i>
+                <i class="icon-skip_next" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('last')"></i>
+                <select v-model="currentPage">
+                    <option v-for="page in pageNum" v-bind:value="page">page {{ page }}</option>
+                </select>
+                <i class="icon-zoom_in" v-bind:class="{'disabled': zoomNum == 2}" @click="modifyZoom('in')"></i>
+                <select v-model="zoomNum">
+                    <option value="0.5">50%</option>
+                    <option value="0.6">60%</option>
+                    <option value="0.7">70%</option>
+                    <option value="0.8">80%</option>
+                    <option value="0.9">90%</option>
+                    <option value="1.0" selected>100%</option>
+                    <option value="1.1">110%</option>
+                    <option value="1.2">120%</option>
+                    <option value="1.3">130%</option>
+                    <option value="1.4">140%</option>
+                    <option value="1.5">150%</option>
+                    <option value="1.6">160%</option>
+                    <option value="1.7">170%</option>
+                    <option value="1.8">180%</option>
+                    <option value="1.9">190%</option>
+                    <option value="2.0">200%</option>
+                </select>
+                <i class="icon-zoom_out" v-bind:class="{'disabled': zoomNum == 0.5}" @click="modifyZoom('out')"></i>
+                <i class="icon-format_align_left" @click="textAlign = 'left'"></i>
+                <i class="icon-format_align_center" @click="textAlign = 'center'"></i>
+                <i class="icon-format_align_right" @click="textAlign = 'right'"></i>
+                <i class="icon-print" @click="window.print()"></i>
+            </div>
+        </header>
+
+        <aside class="noprint" width="240px" v-show="ifMenuShow">
+            <nav class="tabNav">
+                <ul>
+                    <li v-bind:class="{ 'curr': currentNav == 0 }" @click="currentNav = 0">Page</li>
+                    <li v-bind:class="{ 'curr': currentNav == 1 }" @click="currentNav = 1">Bookmark</li>
+                </ul>
+
+                <div class="clear"></div>
+            </nav>
+
+            <div class="tab-conent scrollbar" v-bind:style="{ height: asideHeight + 'px' }">
+
+            <section v-show="currentNav == 0">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-file-text2"></i> page {{ page }}</li>
+                </ul>
+            </section>
+
+            <section v-show="currentNav == 1">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-turned_in_not"></i> Bookmark {{ page }}</li>
+                </ul>
+            </section>
+        </div>
+
+        </aside>
+        <div class="main scrollbar noprint"  v-bind:style="{ height: mainHeight + 'px' }" v-bind:class="{ 'mainLeftM': ifMenuShow, 'aleft': textAlign === 'left','acenter': textAlign === 'center','aright': textAlign === 'right'}">
+            <div class="conent" v-html="pageContent" v-bind:style="zoomStyle"></div>
+
+            <div class="clear"></div>
+        </div>
+
+        <!--专门只为打印的内容-->
+        <div class="conent print" style="display:none" v-html="pageContent"></div>
+    </div>
+</body>
+<!-- 先引入 Vue -->
+<script src="js/vue.min.js"></script>
+<script>
+
+var app = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                // visible: false,
+                isCollapse: false,
+                currentNav: 0,
+                activeName2: 'first',
+                pageNum: 1, 
+                currentPage: 1,
+                pageContent: '',
+                asideHeight: 300,
+                mainHeight: 300,
+                ifMenuShow: true,
+                zoomNum: '1.0',
+                textAlign: 'left',
+                zoomStyle: {},
+                pageDatas: ['<p><span style="font-family:Arial;font-size:9.962640px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:66.649414px;left:79.970673px"><nobr>Kolkata, India </nobr></span></span></p><p><span style="font-family:Arial;font-size:9.962640px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:82.590820px;left:79.970673px"><nobr>(+91) 8100628091 </nobr></span></span></p><p><span style="font-family:Arial;font-size:17.215441px;font-weight:bold;color:#000000;"><span style="position:absolute;top:68.370766px;left:304.909332px"><nobr>R i t a m D e b n a t h </nobr></span></span></p><p><span style="font-family:Arial;font-size:9.962640px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:67.094810px;left:584.677307px"><nobr>ritamdebnath@icloud.com </nobr></span></span></p><p><span style="font-family:Arial;font-size:9.962640px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:83.034752px;left:625.470642px"><nobr>ritam-alt.super.site </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:115.152016px;left:79.970673px"><nobr>Work Experience </nobr></span></span></p><div style="position:absolute;top:137.305344px;left:71.333336px"><nobr><img height="3.000000" width="674.000000" src ="bgimg/bg00001.jpg"/></nobr></div><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:138.853348px;left:79.970673px"><nobr>IOS Developer Intern CRED May 2022 <span style="font-family:SimSun;">– </span><span style="font-family:Arial;">Present </span></nobr></span><span style="position:absolute;top:176.157883px;left:83.954674px"><nobr><span style="font-family:SimSun;font-style:normal;font-weight:normal;">• </span><span style="font-family:Arial;">Working with the IOS Engineering team to enable high-performance in IOS access across the orga- </span></nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:194.223221px;left:102.544006px"><nobr>nization with ease of use and cost bene ﬁts. </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:225.196045px;left:79.970673px"><nobr>Back End Developer Intern WorkOnGrid June 2022 <span style="font-family:SimSun;">– </span><span style="font-family:Arial;">Present </span></nobr></span><span style="position:absolute;top:262.500580px;left:83.954674px"><nobr><span style="font-family:SimSun;font-style:normal;font-weight:normal;">• </span><span style="font-family:Arial;">Creating and optimizing APIs for front end teams to consume. </span></nobr></span></span></p><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:280.565918px;left:83.954674px"><nobr>• <span style="font-family:Arial;">Troubleshooting production issues with priority. </span></nobr></span></span></p><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:298.631195px;left:83.954674px"><nobr>• <span style="font-family:Arial;">Designing and reviewing solutions for backend. </span></nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:328.533356px;left:79.970673px"><nobr>Mentee (Cybersecurity </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:346.598724px;left:79.970673px"><nobr>Engage) </nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:328.533356px;left:373.105316px"><nobr>Microsoft May 2022 <span style="font-family:SimSun;">– </span><span style="font-family:Arial;">June 2022 </span></nobr></span></span></p><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:373.971283px;left:83.954674px"><nobr>• <span style="font-family:Arial;">Researched and created automated framework ARP spooﬁng and Denial of service attack. </span></nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:404.944000px;left:79.970673px"><nobr>IOS Developer Intern Edvora June 2022 <span style="font-family:SimSun;">– </span><span style="font-family:Arial;">Present </span></nobr></span><span style="position:absolute;top:442.248596px;left:83.954674px"><nobr><span style="font-family:SimSun;font-style:normal;font-weight:normal;">• </span><span style="font-family:Arial;">Troubleshoot and Debug to optimize performance. </span></nobr></span></span></p><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:460.313904px;left:83.954674px"><nobr>• <span style="font-family:Arial;">Design interfaces to improve user experience. </span></nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:497.619995px;left:79.970673px"><nobr>Awards </nobr></span></span></p><div style="position:absolute;top:517.038696px;left:71.333336px"><nobr><img height="3.000000" width="674.000000" src ="bgimg/bg00002.jpg"/></nobr></div><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:520.834717px;left:83.954674px"><nobr>• <span style="font-family:Arial;font-weight:bold;">WWDC22 Swift Student Challenge Award (Apple) Recognized for creating an app named Vault </span></nobr></span><span style="position:absolute;top:538.987244px;left:102.544006px"><nobr><span style="font-family:Arial;">which is a two factor authenticator app which generates time based OTPs(One Time Passwords). </span></nobr></span><span style="position:absolute;top:557.052551px;left:102.544006px"><nobr><span style="font-family:Arial;">It uses the HMAC type of message authentication involving SHA1 cryptographic function. This is </span></nobr></span><span style="position:absolute;top:575.119263px;left:102.544006px"><nobr><span style="font-family:Arial;">based on TOTP(Time based One Time Passwords) algorithm. July 2022 </span></nobr></span></span></p><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:597.082764px;left:83.954674px"><nobr>• <span style="font-family:Arial;font-weight:bold;">MLH GLOBAL HACK INIT (MLH) Recognized for creating a social media app on DeSo. - </span></nobr></span><span style="position:absolute;top:615.235229px;left:102.544006px"><nobr><span style="font-family:Arial;">ﬁrst one from GLOBAL. June 2022 </span></nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:652.541321px;left:79.970673px"><nobr>Skills </nobr></span></span></p><div style="position:absolute;top:672.031982px;left:71.333336px"><nobr><img height="3.000000" width="674.000000" src ="bgimg/bg00003.jpg"/></nobr></div><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:675.260559px;left:83.954674px"><nobr>• <span style="font-family:Arial;">Languages: Python, JavaScript, C++, SQL, Rust, Go, TypeScript, Java, PHP </span></nobr></span></span></p><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:693.327271px;left:83.954674px"><nobr>• <span style="font-family:Arial;">Technology: MongoDB, Travis CI, Docker, Terraform, CLOUDFLARE </span></nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:730.632019px;left:79.970673px"><nobr>Projects </nobr></span></span></p><div style="position:absolute;top:752.873352px;left:71.333336px"><nobr><img height="3.000000" width="674.000000" src ="bgimg/bg00004.jpg"/></nobr></div><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:755.898682px;left:83.954674px"><nobr>• <span style="font-family:Arial;font-weight:bold;">Six Feet Between My iPad Playground Book project named “6 Feet Between </span><span style="font-family:SimSun;">” </span><span style="font-family:Arial;">is an interactive </span></nobr></span><span style="position:absolute;top:774.051270px;left:102.544006px"><nobr><span style="font-family:Arial;">game that harnesses the power of the latest Apple software technologies to provide an immersive </span></nobr></span><span style="position:absolute;top:792.116638px;left:102.544006px"><nobr><span style="font-family:Arial;">experience. This game is intended to educate people about keeping social distance as a hygiene </span></nobr></span><span style="position:absolute;top:810.181946px;left:102.544006px"><nobr><span style="font-family:Arial;">practice. Swift </span></nobr></span></span></p><p><span style="font-family:SimSun;font-size:10.909089px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:832.145325px;left:83.954674px"><nobr>• <span style="font-family:Arial;font-weight:bold;">Self Driving Car This is the code I wrote with JavaScript (no libraries). The code will appear as </span></nobr></span><span style="position:absolute;top:850.299316px;left:102.544006px"><nobr><span style="font-family:Arial;">the part of progresses and will be divided into parts as follows: Car driving mechanics, Road def- </span></nobr></span><span style="position:absolute;top:868.364563px;left:102.544006px"><nobr><span style="font-family:Arial;">inition, Artiﬁcial sensors, Collision detection, Traffic simulation, Neural network, Visualizing neural </span></nobr></span><span style="position:absolute;top:886.429932px;left:102.544006px"><nobr><span style="font-family:Arial;">networks, Optimizing neural networks, Fine-tuning. JavaScript </span></nobr></span></span></p><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:923.736023px;left:79.970673px"><nobr>Education </nobr></span></span></p><div style="position:absolute;top:943.154724px;left:71.333336px"><nobr><img height="3.000000" width="674.000000" src ="bgimg/bg00005.jpg"/></nobr></div><p><span style="font-family:Arial;font-size:10.909089px;font-weight:bold;color:#000000;"><span style="position:absolute;top:944.702698px;left:79.970673px"><nobr>Kolkata, India Brainware University November 2021 | Dropout </nobr></span><span style="position:absolute;top:982.007263px;left:83.954674px"><nobr><span style="font-family:SimSun;font-style:normal;font-weight:normal;">• </span><span style="font-family:Arial;">Bachelor of Technology in Computer Science &amp; Engineering. GPA: 3.8 </span></nobr></span></span></p>']
+            }
+        },
+        mounted: function() {
+            this.$nextTick(function() {
+                this.pageNum = this.pageDatas.length;
+                this.pageContent = this.pageDatas[0];
+
+                this.setLeftMenuHeight();
+            })
+        },
+        watch: {
+            'currentPage': function(newVal, oldValue) {
+                // console.log('newVal ' + newVal, 'oldValue ' + oldValue);
+                if (newVal) {
+                    this.pageContent = this.pageDatas[this.currentPage - 1];
+                }
+            },
+            'zoomNum': function(newVal, oldValue) {
+                if (newVal) {
+                    this.zoomStyle = {
+                        'transform': 'scale(' + newVal + ')',
+                        '-webkit-transform': 'scale(' + newVal + ')',
+                        '-ms-transform': 'scale(' + newVal + ')',
+                        '-moz-transform': 'scale(' + newVal + ')',
+                        '-o-transform': 'scale(' + newVal + ')'
+                    }
+                }
+            }
+        },
+        methods: {
+            
+            changeCurrentPage: function(methods) {
+                switch (methods) {
+                    case 'first':
+                        this.currentPage = 1;
+                        break;
+                    case 'prev':
+                        if (this.currentPage > 1) {
+                            this.currentPage -= 1;
+                        }
+                        break;
+                    case 'next':
+                        if (this.currentPage < this.pageNum) {
+                            this.currentPage += 1;
+                        }
+                        break;
+                    case 'last':
+                        this.currentPage = this.pageNum;
+                        break;
+                }
+            },
+
+            gotoPage: function(page) {
+                console.log(page);
+                this.currentPage = page;
+            },
+            modifyZoom: function(type) {
+                switch (type) {
+                    case 'in':
+                        if (this.zoomNum < 2) {
+                            // this.zoomNum = (this.zoomNum + 0.1).toFixed(1);
+                            this.zoomNum = (parseFloat(this.zoomNum) + 0.1).toFixed(1);
+                        }
+                        break;
+                    case 'out':
+                        if (this.zoomNum > 0.5) {
+                            this.zoomNum = (parseFloat(this.zoomNum) - 0.1).toFixed(1);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                console.log(this.zoomNum);
+            },
+            setLeftMenuHeight: function() {
+                // this.asideHeight = document.body.scrollHeight - 60;
+                this.mainHeight = document.documentElement.clientHeight - 60 - 20;
+                // 60为头部导航高度， 46为menu高度， 40为上下padding
+                this.asideHeight = this.mainHeight - 20 - 46;
+            },
+            changePage: function(page) {
+                this.currentPage = page;
+                // this.pageContent = this.pageDatas[page - 1];
+            },
+            changeLeftMenu: function() {
+                this.ifMenuShow = !this.ifMenuShow;
+            }
+        }
+    });
+
+function gotoPage(page) {
+    console.log(page);
+    app.gotoPage(page);
+}
+
+</script>
+
+</html>
